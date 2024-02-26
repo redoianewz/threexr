@@ -10,6 +10,7 @@ let overlayContent = document.getElementById("overlay-content");
 let selectInput = document.getElementById("model-select");
 let modelName = selectInput.value;
 let selectedModel = null;
+
 selectInput.addEventListener("change", (e) => {
   modelName = e.target.value;
 });
@@ -97,39 +98,48 @@ function onSelect() {
         model.scale.set(0.5, 0.5, 0.5);
         model.name = modelName; // Set the model name for identification
         scene.add(model);
+        selectedModel = model; // Set the selected model
 
-        // Set the selected model for movement
-        selectedModel = model;
+        // Show model coordinates in UI
+        overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
+          2
+        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;
       }
     }
   }
 }
 
-// Event listener for device orientation
-window.addEventListener("deviceorientation", handleOrientation);
+// Event listener for touch controls
+let touchStartPosition = { x: 0, y: 0 , z: 0};
 
-function handleOrientation(event) {
-  const beta = event.beta; // rotation around the x-axis
-  const gamma = event.gamma; // rotation around the y-axis
+function handleTouchMove(event) {
+  const deltaX = event.touches[0].clientX - touchStartPosition.x;
+  const deltaY = event.touches[0].clientY - touchStartPosition.y;
+  const deltaZ =event.touches[0].clientZ - touchStartPosition.z;
 
-  // Adjust the orientation of the reticle based on the device orientation
-  reticle.rotation.x = beta * (Math.PI / 180);
-  reticle.rotation.y = gamma * (Math.PI / 180);
-
-  // Move the selected model based on user input
   if (selectedModel) {
-    selectedModel.position.x += gamma * 0.01; // Adjust the factor as needed
-    selectedModel.position.y += beta * 0.01; // Adjust the factor as needed
+    selectedModel.position.x += deltaX * 0.01;
+    selectedModel.position.y -= deltaY * 0.01;
+    selectedModel.position.z -= deltaZ * 0.01;
   }
 
-  // You can also adjust the orientation of the loaded models if needed
-  scene.children.forEach((object) => {
-    if (object.type === "Group" && object !== selectedModel) {
-      object.rotation.x = beta * (Math.PI / 180);
-      object.rotation.y = gamma * (Math.PI / 180);
-    }
-  });
+  touchStartPosition = {
+    x: event.touches[0].clientX,
+    y: event.touches[0].clientY,
+    z: event.touches[0].clientZ,
+  };
 }
+
+function handleTouchStart(event) {
+  touchStartPosition = {
+    x: event.touches[0].clientX,
+    y: event.touches[0].clientY,
+    z: event.touches[0].clientZ,
+  };
+}
+
+window.addEventListener("touchmove", handleTouchMove);
+window.addEventListener("touchstart", handleTouchStart);
 
 renderer.setAnimationLoop(render);
 
@@ -178,6 +188,3 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(window.devicePixelRatio);
 });
-
-// Remove the event listener when it's no longer needed
-window.removeEventListener("deviceorientation", handleOrientation);
