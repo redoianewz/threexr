@@ -110,23 +110,21 @@ function onSelect() {
 }
 
 // Event listener for touch controls
-let touchStartPosition = { x: 0, y: 0 , z: 0};
+let touchStartPosition = { x: 0, y: 0 };
 
 function handleTouchMove(event) {
   const deltaX = event.touches[0].clientX - touchStartPosition.x;
   const deltaY = event.touches[0].clientY - touchStartPosition.y;
-  const deltaZ =event.touches[0].clientZ - touchStartPosition.z;
+  
 
   if (selectedModel) {
     selectedModel.position.x += deltaX * 0.01;
     selectedModel.position.y -= deltaY * 0.01;
-    selectedModel.position.z -= deltaZ * 0.01;
   }
 
   touchStartPosition = {
     x: event.touches[0].clientX,
     y: event.touches[0].clientY,
-    z: event.touches[0].clientZ,
   };
 }
 
@@ -134,7 +132,6 @@ function handleTouchStart(event) {
   touchStartPosition = {
     x: event.touches[0].clientX,
     y: event.touches[0].clientY,
-    z: event.touches[0].clientZ,
   };
 }
 
