@@ -85,58 +85,43 @@ const material = new THREE.MeshStandardMaterial({
 });
 
 let controller = renderer.xr.getController(0);
-controller.addEventListener("select", onSelect);
+controller.addEventListener("selectstart", onSelectStart);
 scene.add(controller);
 
-function onSelect() {
-  if (reticle.visible) {
-    if (loadedModels[modelName]) {
-      const existingModel = scene.getObjectByName(modelName);
-      if (!existingModel) {
-        const model = loadedModels[modelName].clone();
-        model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(0.5, 0.5, 0.5);
-        model.name = modelName; // Set the model name for identification
-        scene.add(model);
-        selectedModel = model; // Set the selected model
+function onSelectStart(event) {
+  const controller = event.target;
+  const intersections = getIntersections(controller);
 
-        // Show model coordinates in UI
-        overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
-          2
-        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;
-      }
+  if (intersections.length > 0) {
+    const intersection = intersections[0];
+    const object = intersection.object;
+
+    if (object.name === modelName) {
+      selectedModel = object;
+      overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
+        2
+      )}, y=${selectedModel.position.y.toFixed(
+        2
+      )}, z=${selectedModel.position.z.toFixed(2)}`;
     }
   }
 }
 
-// Event listener for touch controls
-let touchStartPosition = { x: 0, y: 0 };
+function getIntersections(controller) {
+  const tempMatrix = new THREE.Matrix4();
+  const matrixWorld = controller.matrixWorld;
+  const raycaster = new THREE.Raycaster();
+  raycaster.ray.origin.setFromMatrixPosition(matrixWorld);
+  raycaster.ray.direction.set(0, 0, -1).applyMatrix4(controller.matrixWorld);
 
-function handleTouchMove(event) {
-  const deltaX = event.touches[0].clientX - touchStartPosition.x;
-  const deltaY = event.touches[0].clientY - touchStartPosition.y;
-  
-
-  if (selectedModel) {
-    selectedModel.position.x += deltaX * 0.01;
-    selectedModel.position.y -= deltaY * 0.01;
-  }
-
-  touchStartPosition = {
-    x: event.touches[0].clientX,
-    y: event.touches[0].clientY,
-  };
+  return Object.values(loadedModels).reduce((intersections, object) => {
+    if (object.type === "Group") {
+      const intersects = raycaster.intersectObject(object, true);
+      intersections.push(...intersects);
+    }
+    return intersections;
+  }, []);
 }
-
-function handleTouchStart(event) {
-  touchStartPosition = {
-    x: event.touches[0].clientX,
-    y: event.touches[0].clientY,
-  };
-}
-
-window.addEventListener("touchmove", handleTouchMove);
-window.addEventListener("touchstart", handleTouchStart);
 
 renderer.setAnimationLoop(render);
 
