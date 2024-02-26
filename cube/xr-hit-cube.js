@@ -9,7 +9,7 @@ let hitTestSourceRequested = false;
 let overlayContent = document.getElementById("overlay-content");
 let selectInput = document.getElementById("model-select");
 let modelName = selectInput.value;
-
+let selectedModel = null;
 selectInput.addEventListener("change", (e) => {
   modelName = e.target.value;
 });
@@ -28,10 +28,12 @@ gltfLoader.load("/models/carpet.gltf", onLoad);
 gltfLoader.load("/models/carpet1.gltf", onLoad);
 gltfLoader.load("/models/chiarGame.gltf", onLoad);
 gltfLoader.load("/models/tree1.gltf", onLoad);
+gltfLoader.load("/models/desktop.gltf", onLoad);
+gltfLoader.load("/models/earth.gltf", onLoad);
 
 function onLoad(gltf) {
   loadedModels[gltf.scene.name] = gltf.scene;
-    console.log(`Loaded model: ${gltf.scene.name}`);
+  console.log(`Loaded model: ${gltf.scene.name}`);
 }
 
 const scene = new THREE.Scene();
@@ -88,12 +90,45 @@ scene.add(controller);
 function onSelect() {
   if (reticle.visible) {
     if (loadedModels[modelName]) {
-      const model = loadedModels[modelName].clone();
-      model.position.setFromMatrixPosition(reticle.matrix);
-      model.scale.set(0.5, 0.5, 0.5);
-      scene.add(model);
+      const existingModel = scene.getObjectByName(modelName);
+      if (!existingModel) {
+        const model = loadedModels[modelName].clone();
+        model.position.setFromMatrixPosition(reticle.matrix);
+        model.scale.set(0.5, 0.5, 0.5);
+        model.name = modelName; // Set the model name for identification
+        scene.add(model);
+
+        // Set the selected model for movement
+        selectedModel = model;
+      }
     }
   }
+}
+
+// Event listener for device orientation
+window.addEventListener("deviceorientation", handleOrientation);
+
+function handleOrientation(event) {
+  const beta = event.beta; // rotation around the x-axis
+  const gamma = event.gamma; // rotation around the y-axis
+
+  // Adjust the orientation of the reticle based on the device orientation
+  reticle.rotation.x = beta * (Math.PI / 180);
+  reticle.rotation.y = gamma * (Math.PI / 180);
+
+  // Move the selected model based on user input
+  if (selectedModel) {
+    selectedModel.position.x += gamma * 0.01; // Adjust the factor as needed
+    selectedModel.position.y += beta * 0.01; // Adjust the factor as needed
+  }
+
+  // You can also adjust the orientation of the loaded models if needed
+  scene.children.forEach((object) => {
+    if (object.type === "Group" && object !== selectedModel) {
+      object.rotation.x = beta * (Math.PI / 180);
+      object.rotation.y = gamma * (Math.PI / 180);
+    }
+  });
 }
 
 renderer.setAnimationLoop(render);
@@ -129,12 +164,7 @@ function render(timestamp, frame) {
       }
     }
   }
-  // console.log(scene.children)
-  scene.children.forEach((object) => {
-    if (object.name === "cube") {
-      object.rotation.y += 0.01;
-    }
-  });
+
   renderer.render(scene, camera);
 }
 
@@ -148,3 +178,6 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(window.devicePixelRatio);
 });
+
+// Remove the event listener when it's no longer needed
+window.removeEventListener("deviceorientation", handleOrientation);
