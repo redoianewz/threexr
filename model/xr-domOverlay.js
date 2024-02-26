@@ -24,6 +24,9 @@ gltfLoader.setDRACOLoader(dracoLoader)
 
 gltfLoader.load('/models/chair.gltf', onLoad);
 gltfLoader.load('/models/bookcase.gltf', onLoad);
+gltfLoader.load("/models/bookcase1.gltf", onLoad);
+gltfLoader.load('/models/bed.gltf', onLoad);
+gltfLoader.load('/models/desk.gltf', onLoad);
 gltfLoader.load('/models/carpet.gltf', onLoad);
 gltfLoader.load("/models/carpet1.gltf", onLoad);
 gltfLoader.load('/models/chiarGame.gltf', onLoad);
