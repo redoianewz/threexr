@@ -6,7 +6,7 @@
     "scene" : 0,
     "scenes" : [
         {
-            "name" : "Scene",
+            "name" : "tree1",
             "nodes" : [
                 0
             ]
@@ -15,7 +15,7 @@
     "nodes" : [
         {
             "mesh" : 0,
-            "name" : "tree-beech"
+            "name" : "tree1"
         }
     ],
     "materials" : [
