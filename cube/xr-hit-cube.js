@@ -115,11 +115,38 @@ let touchStartPosition = { x: 0, y: 0 };
 function handleTouchMove(event) {
   const deltaX = event.touches[0].clientX - touchStartPosition.x;
   const deltaY = event.touches[0].clientY - touchStartPosition.y;
-  
 
   if (selectedModel) {
+    // تحريك النموذج في الاتجاهات الثلاث (X, Y, Z)
     selectedModel.position.x += deltaX * 0.01;
     selectedModel.position.y -= deltaY * 0.01;
+
+    // التحكم في إحداثيات Z
+    if (event.touches.length === 2) {
+      const deltaZ = event.touches[1].clientY - touchStartPosition.y;
+      selectedModel.position.z -= deltaZ * 0.01;
+    }
+
+    // التحكم في دوران النموذج
+    if (event.touches.length === 3) {
+      const rotationFactor = 0.005; // تحديد معامل دوران حسب الحاجة
+      selectedModel.rotation.y += deltaX * rotationFactor;
+      selectedModel.rotation.x += deltaY * rotationFactor;
+    }
+
+    // التحكم في العرض والطول
+    if (event.touches.length === 4) {
+      const scaleFactor = 0.005; // تحديد معامل تكبير/تصغير حسب الحاجة
+      selectedModel.scale.x += deltaX * scaleFactor;
+      selectedModel.scale.y -= deltaY * scaleFactor;
+      // يمكنك أيضًا تغيير selectedModel.scale.z إذا كنت ترغب في التحكم في الطول أيضًا
+    }
+
+    overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
+      2
+    )}, y=${selectedModel.position.y.toFixed(
+      2
+    )}, z=${selectedModel.position.z.toFixed(2)}`;
   }
 
   touchStartPosition = {
@@ -127,6 +154,7 @@ function handleTouchMove(event) {
     y: event.touches[0].clientY,
   };
 }
+
 
 function handleTouchStart(event) {
   touchStartPosition = {
