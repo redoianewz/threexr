@@ -31,6 +31,11 @@ gltfLoader.load('/models/carpet.gltf', onLoad);
 gltfLoader.load("/models/carpet1.gltf", onLoad);
 gltfLoader.load('/models/chiarGame.gltf', onLoad);
 gltfLoader.load('/models/tree1.gltf', onLoad);
+gltfLoader.load('/models/bmw.gltf', onLoad);
+gltfLoader.load('/models/drone.gltf', onLoad);
+gltfLoader.load('/models/kawasaki2.gltf', onLoad);
+gltfLoader.load('/models/kawasakiNinja.gltf', onLoad);
+gltfLoader.load('/models/mersedes.gltf', onLoad);
 
 
 

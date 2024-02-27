@@ -31,6 +31,11 @@ gltfLoader.load("/models/chiarGame.gltf", onLoad);
 gltfLoader.load("/models/tree1.gltf", onLoad);
 gltfLoader.load("/models/desktop.gltf", onLoad);
 gltfLoader.load("/models/earth.gltf", onLoad);
+gltfLoader.load("/models/bmw.gltf", onLoad);
+gltfLoader.load("/models/drone.gltf", onLoad);
+gltfLoader.load("/models/kawasaki2.gltf", onLoad);
+gltfLoader.load("/models/kawasakiNinja.gltf", onLoad);
+gltfLoader.load("/models/mersedes.gltf", onLoad);
 
 function onLoad(gltf) {
   loadedModels[gltf.scene.name] = gltf.scene;
@@ -117,29 +122,24 @@ function handleTouchMove(event) {
   const deltaY = event.touches[0].clientY - touchStartPosition.y;
 
   if (selectedModel) {
-    // تحريك النموذج في الاتجاهات الثلاث (X, Y, Z)
     selectedModel.position.x += deltaX * 0.01;
     selectedModel.position.y -= deltaY * 0.01;
 
-    // التحكم في إحداثيات Z
     if (event.touches.length === 2) {
       const deltaZ = event.touches[1].clientY - touchStartPosition.y;
       selectedModel.position.z -= deltaZ * 0.01;
     }
 
-    // التحكم في دوران النموذج
-    if (event.touches.length === 3) {
-      const rotationFactor = 0.005; // تحديد معامل دوران حسب الحاجة
+    if (event.touches.length >= 1) {
+      const rotationFactor = 0.005;
       selectedModel.rotation.y += deltaX * rotationFactor;
       selectedModel.rotation.x += deltaY * rotationFactor;
     }
 
-    // التحكم في العرض والطول
     if (event.touches.length === 4) {
-      const scaleFactor = 0.005; // تحديد معامل تكبير/تصغير حسب الحاجة
+      const scaleFactor = 0.005;
       selectedModel.scale.x += deltaX * scaleFactor;
       selectedModel.scale.y -= deltaY * scaleFactor;
-      // يمكنك أيضًا تغيير selectedModel.scale.z إذا كنت ترغب في التحكم في الطول أيضًا
     }
 
     overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
@@ -154,6 +154,7 @@ function handleTouchMove(event) {
     y: event.touches[0].clientY,
   };
 }
+
 
 
 function handleTouchStart(event) {
