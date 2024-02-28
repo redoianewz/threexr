@@ -122,24 +122,25 @@ function handleTouchMove(event) {
   const deltaY = event.touches[0].clientY - touchStartPosition.y;
 
   if (selectedModel) {
-    selectedModel.position.x += deltaX * 0.01;
-    selectedModel.position.y -= deltaY * 0.01;
+    // Rotate the model based on the touch movement
+    const rotationFactor = 0.005;
+    selectedModel.rotation.y += deltaX * rotationFactor;
+    selectedModel.rotation.x += deltaY * rotationFactor;
 
     if (event.touches.length === 2) {
-      const deltaZ = event.touches[1].clientY - touchStartPosition.y;
-      selectedModel.position.z -= deltaZ * 0.01;
-    }
+      // Zoom the model based on the distance between two touches
+      const deltaPinch = Math.hypot(
+        event.touches[0].clientX - event.touches[1].clientX,
+        event.touches[0].clientY - event.touches[1].clientY
+      );
 
-    if (event.touches.length >= 1) {
-      const rotationFactor = 0.005;
-      selectedModel.rotation.y += deltaX * rotationFactor;
-      selectedModel.rotation.x += deltaY * rotationFactor;
-    }
+      const zoomFactor = 0.01;
+      selectedModel.scale.multiplyScalar(
+        1 + (deltaPinch - touchStartPosition.pinch) * zoomFactor
+      );
 
-    if (event.touches.length === 4) {
-      const scaleFactor = 0.005;
-      selectedModel.scale.x += deltaX * scaleFactor;
-      selectedModel.scale.y -= deltaY * scaleFactor;
+      // Update pinch distance for the next frame
+      touchStartPosition.pinch = deltaPinch;
     }
 
     overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
@@ -152,8 +153,10 @@ function handleTouchMove(event) {
   touchStartPosition = {
     x: event.touches[0].clientX,
     y: event.touches[0].clientY,
+    pinch: touchStartPosition.pinch || 0, // Initialize pinch distance
   };
 }
+
 
 
 
