@@ -101,11 +101,10 @@ function onSelect() {
         const model = loadedModels[modelName].clone();
         model.position.setFromMatrixPosition(reticle.matrix);
         model.scale.set(0.5, 0.5, 0.5);
-        model.name = modelName; // Set the model name for identification
+        model.name = modelName;
         scene.add(model);
-        selectedModel = model; // Set the selected model
+        selectedModel = model;
 
-        // Show model coordinates in UI
         overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
           2
         )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;
@@ -114,98 +113,35 @@ function onSelect() {
   }
 }
 
-// Event listener for touch controls
 let touchStartPosition = { x: 0, y: 0, pinch: 0 };
-// function handleTouchMove(event) {
-//   const deltaX = event.touches[0].clientX - touchStartPosition.x;
-//   const deltaY = event.touches[0].clientY - touchStartPosition.y;
-
-//   if (selectedModel) {
-//     // Rotate the model based on the touch movement
-//     const rotationFactor = 0.005;
-//     selectedModel.rotation.y += deltaX * rotationFactor;
-//     selectedModel.rotation.x += deltaY * rotationFactor;
-
-//     if (event.touches.length === 2) {
-//       // Zoom the model based on the distance between two touches
-//       const deltaPinch = Math.hypot(
-//         event.touches[0].clientX - event.touches[1].clientX,
-//         event.touches[0].clientY - event.touches[1].clientY
-//       );
-
-//       const zoomFactor = 0.01;
-//       selectedModel.scale.multiplyScalar(
-//         1 + (deltaPinch - touchStartPosition.pinch) * zoomFactor
-//       );
-
-//       // Update pinch distance for the next frame
-//       touchStartPosition.pinch = deltaPinch;
-//     }
-
-//     overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
-//       2
-//     )}, y=${selectedModel.position.y.toFixed(
-//       2
-//     )}, z=${selectedModel.position.z.toFixed(2)}`;
-//   }
-
-//   touchStartPosition = {
-//     x: event.touches[0].clientX,
-//     y: event.touches[0].clientY,
-//     pinch: touchStartPosition.pinch || 0, // Initialize pinch distance
-//   };
-// }
-
-// Event listener for touch controls
-
-let cameraRotation = { x: 0, y: 0 };
+let previousTouch = null;
 
 function handleTouchMove(event) {
-  const deltaX = event.touches[0].clientX - touchStartPosition.x;
-  const deltaY = event.touches[0].clientY - touchStartPosition.y;
+  const currentTouch = event.touches[0];
 
-  // Rotate the camera based on the touch movement
-  const rotationFactor = 0.005;
-  cameraRotation.y += deltaX * rotationFactor;
-  cameraRotation.x += deltaY * rotationFactor;
+  if (previousTouch) {
+    const deltaX = currentTouch.clientX - previousTouch.clientX;
+    const deltaY = currentTouch.clientY - previousTouch.clientY;
 
-  if (event.touches.length === 2) {
-    // Zoom the camera based on the distance between two touches
-    const deltaPinch = Math.hypot(
-      event.touches[0].clientX - event.touches[1].clientX,
-      event.touches[0].clientY - event.touches[1].clientY
-    );
-
-    const zoomFactor = 0.01;
-    camera.position.z += (deltaPinch - touchStartPosition.pinch) * zoomFactor;
-
-    // Update pinch distance for the next frame
-    touchStartPosition.pinch = deltaPinch;
+    // حساب زاوية الدوران بناءً على حركة الإصبع
+    const rotationFactor = 0.01;
+    selectedModel.rotation.y += deltaX * rotationFactor;
+    selectedModel.rotation.x += deltaY * rotationFactor;
   }
 
-  // Apply camera rotation
-  camera.rotation.set(cameraRotation.x, cameraRotation.y, 0);
 
-  touchStartPosition = {
-    x: event.touches[0].clientX,
-    y: event.touches[0].clientY,
-    pinch: touchStartPosition.pinch || 0, // Initialize pinch distance
+  previousTouch = {
+    clientX: currentTouch.clientX,
+    clientY: currentTouch.clientY,
   };
 }
 
-
-
-
-
-function handleTouchStart(event) {
-  touchStartPosition = {
-    x: event.touches[0].clientX,
-    y: event.touches[0].clientY,
-  };
+function handleTouchEnd() {
+  previousTouch = null;
 }
 
 window.addEventListener("touchmove", handleTouchMove);
-window.addEventListener("touchstart", handleTouchStart);
+window.addEventListener("touchend", handleTouchEnd);
 
 renderer.setAnimationLoop(render);
 
