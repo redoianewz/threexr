@@ -178,7 +178,7 @@ imageLoader.load("models/images/bed.png", (texture) => onLoad(texture, "bed"));
 imageLoader.load("models/images/chiarGame.png", (texture) =>
   onLoad(texture, "chiarGame")
 );
-imageLoader.load("models/images/carpet.png", (texture) => onLoad(texture, "carpet"));
+imageLoader.load("models/images/carpet.jpeg", (texture) => onLoad(texture, "carpet"));
 imageLoader.load("models/images/carpet1.png", (texture) =>
   onLoad(texture, "carpet1")
 );
