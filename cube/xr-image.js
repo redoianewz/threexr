@@ -80,13 +80,12 @@ function onSelect() {
 }
 let pinchStartDistance = 0;
 let isPinching = false;
-let previousTouch = [];
+let previousTouch = null;
 
 function handleTouchMove(event) {
   const touches = event.touches;
 
   if (touches.length === 1) {
-    // التحكم في الدوران إذا كان هناك لمست واحدة
     const currentTouch = touches[0];
 
     if (previousTouch) {
@@ -103,11 +102,7 @@ function handleTouchMove(event) {
       clientY: currentTouch.clientY,
     };
   } else if (touches.length === 2) {
-    // التحكم في التكبير والتصغير إذا كان هناك لمستين
-    const pinchDistance = Math.hypot(
-      touches[0].clientX - touches[1].clientX,
-      touches[0].clientY - touches[1].clientY
-    );
+    const pinchDistance = getPinchDistance(touches[0], touches[1]);
 
     if (!isPinching) {
       pinchStartDistance = pinchDistance;
@@ -131,19 +126,16 @@ function handleTouchMove(event) {
 
     pinchStartDistance = pinchDistance;
   } else {
-    // إذا لم تكن هناك لمستين، قم بإعادة القيم إلى القيم الافتراضية
-    previousTouch = [];
+    previousTouch = 
     isPinching = false;
-    pinchStartDistance = 0;
-    
   }
 }
-
 
 function handleTouchEnd() {
   pinchStartDistance = 0;
   isPinching = false;
-  previousTouch = [];
+  previousTouch = null;
+  
 }
 
 window.addEventListener("touchmove", handleTouchMove);
