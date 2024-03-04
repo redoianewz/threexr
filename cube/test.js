@@ -9,7 +9,6 @@ let hitTestSourceRequested = false;
 let overlayContent = document.getElementById("overlay-content");
 let selectInput = document.getElementById("model-select");
 let modelName = selectInput.value;
-let selectedModel = null;
 
 selectInput.addEventListener("change", (e) => {
   modelName = e.target.value;
@@ -41,6 +40,10 @@ function onLoad(gltf) {
   loadedModels[gltf.scene.name] = gltf.scene;
 }
 
+/* `const scene = new THREE.Scene();` is creating a new instance of a Three.js scene. This scene is
+where you can add objects, lights, cameras, and other elements that you want to render using
+Three.js. It serves as the container for all the 3D elements that you want to display in your
+virtual or augmented reality environment. */
 const scene = new THREE.Scene();
 
 const sizes = {
@@ -80,9 +83,12 @@ renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(
-  ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
+  ARButton.createButton(renderer, {
+    requiredFeatures: ["hit-test"],
+    optionalFeatures: ["dom-overlay"],
+    domOverlay: { root: overlayContent },
+  })
 );
-
 
 let controller = renderer.xr.getController(0);
 controller.addEventListener("select", onSelect);
@@ -90,51 +96,12 @@ scene.add(controller);
 
 function onSelect() {
   if (reticle.visible) {
-    if (loadedModels[modelName]) {
-      const existingModel = scene.getObjectByName(modelName);
-      if (!existingModel) {
-        const model = loadedModels[modelName].clone();
-        model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(0.5, 0.5, 0.5);
-        model.name = modelName;
-        scene.add(model);
-        selectedModel = model;                
-        overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
-          2
-        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;          
-      }        
-
-    }
+    let model = loadedModels[modelName].clone();
+    model.position.setFromMatrixPosition(reticle.matrix);
+    model.scale.set(0.5, 0.5, 0.5);
+    scene.add(model);
   }
 }
-
-let touchStartPosition = { x: 0, y: 0, pinch: 0 };
-let previousTouch = null;
-
-function handleTouchMove(event) {
-  const currentTouch = event.touches[0];
-
-  if (previousTouch) {
-    const deltaX = currentTouch.clientX - previousTouch.clientX;
-    const deltaY = currentTouch.clientY - previousTouch.clientY;
-
-    const rotationFactor = 0.01;
-    selectedModel.rotation.y += deltaX * rotationFactor;
-    selectedModel.rotation.x += deltaY * rotationFactor;
-  }
-
-  previousTouch = {
-    clientX: currentTouch.clientX,
-    clientY: currentTouch.clientY,
-  };
-}
-
-function handleTouchEnd() {
-  previousTouch = null;
-}
-
-window.addEventListener("touchmove", handleTouchMove);
-window.addEventListener("touchend", handleTouchEnd);
 
 renderer.setAnimationLoop(render);
 
