@@ -61,54 +61,86 @@ let controller = renderer.xr.getController(0);
 controller.addEventListener("select", onSelect);
 scene.add(controller);
 
-function onSelect() {
-  if (reticle.visible) {
-    if (loadedImages[imageName]) {
-      const existingImage = scene.getObjectByName(imageName);
-      if (!existingImage) {
-        const image = createImagePlane(loadedImages[imageName]);
-        image.name = imageName;
-        scene.add(image);
-        selectedImage = image;
-        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(
+// تعريف متغير لتخزين مسافة بداية الضغط للتكبير/التصغير
+let pinchStartDistance = 0;
+
+// تعريف متغير لتخزين الحالة الحالية للتكبير/التصغير
+let isPinching = false;
+
+controller.addEventListener("selectstart", onSelectStart);
+controller.addEventListener("selectend", onSelectEnd);
+
+function onSelectStart(event) {
+  const session = renderer.xr.getSession();
+  session.addEventListener("selectstart", onXRSelectStart);
+}
+
+function onSelectEnd(event) {
+  pinchStartDistance = 0;
+  isPinching = false;
+}
+
+function onXRSelectStart(event) {
+  const inputSource = event.inputSource;
+  const touches = inputSource.gamepad.touches;
+
+  if (touches && touches.length === 2) {
+    pinchStartDistance = getPinchDistance(touches[0], touches[1]);
+    isPinching = true;
+  }
+
+  const session = renderer.xr.getSession();
+  session.addEventListener("selectend", onXRSelectEnd);
+}
+
+function onXRSelectEnd(event) {
+  isPinching = false;
+  const session = renderer.xr.getSession();
+  session.removeEventListener("selectstart", onXRSelectStart);
+  session.removeEventListener("selectend", onXRSelectEnd);
+}
+
+// دالة لمعالجة حركة اللمس (للتكبير والتصغير)
+function onTouchMove(event) {
+  const touches = event.touches;
+
+  if (touches.length === 2) {
+    const pinchDistance = getPinchDistance(touches[0], touches[1]);
+
+    if (isPinching) {
+      const zoomFactor = pinchDistance / pinchStartDistance;
+
+      if (selectedImage) {
+        selectedImage.scale.multiplyScalar(zoomFactor);
+
+        overlayContent.innerText = `Image Coordinates: x=${selectedImage.position.x.toFixed(
           2
-        )}, y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;
+        )}, y=${selectedImage.position.y.toFixed(
+          2
+        )}, z=${selectedImage.position.z.toFixed(
+          2
+        )}\nScale: ${selectedImage.scale.x.toFixed(2)}`;
       }
+
+      pinchStartDistance = pinchDistance;
     }
   }
 }
 
-let touchStartPosition = { x: 0, y: 0, pinch: 0 };
-let previousTouch = null;
-
-function handleTouchMove(event) {
-  const currentTouch = event.touches[0];
-
-  if (previousTouch) {
-    const deltaX = currentTouch.clientX - previousTouch.clientX;
-    const deltaY = currentTouch.clientY - previousTouch.clientY;
-
-    const rotationFactor = 0.01;
-    selectedImage.rotation.y += deltaX * rotationFactor;
-    selectedImage.rotation.x += deltaY * rotationFactor;
-  }
-
-  previousTouch = {
-    clientX: currentTouch.clientX,
-    clientY: currentTouch.clientY,
-  };
+function onTouchEnd() {
+  pinchStartDistance = 0;
+  isPinching = false;
 }
 
-function handleTouchEnd() {
-  previousTouch = null;
-}
+// تسجيل دالة onTouchMove كمعالج لحركة اللمس
+window.addEventListener("touchmove", onTouchMove);
+window.addEventListener("touchend", onTouchEnd);
 
-window.addEventListener("touchmove", handleTouchMove);
-window.addEventListener("touchend", handleTouchEnd);
+// ... الجزء الباقي من الكود
 
 renderer.setAnimationLoop(render);
 
-function render(timestamp, frame) {
+function render(frame) {
   if (frame) {
     const referenceSpace = renderer.xr.getReferenceSpace();
     const session = renderer.xr.getSession();
@@ -148,38 +180,23 @@ function render(timestamp, frame) {
   renderer.render(scene, camera);
 }
 
-
-window.addEventListener("resize", () => {
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(window.devicePixelRatio);
-});
-
-function createImagePlane(texture) {
-  const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
-  const imagePlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1),
-    imageMaterial
-  );
-  imagePlane.position.setFromMatrixPosition(reticle.matrix);
-  imagePlane.scale.set(0.5, 0.5, 0.5);
-  return imagePlane;
-}
-
 // Load images
 imageLoader.load("/images/chair.png", (texture) => onLoad(texture, "chair"));
-imageLoader.load("/images/bookcase.png", (texture) => onLoad(texture, "bookcase"));
-imageLoader.load("/images/bookcase1.png", (texture) => onLoad(texture, "bookcase1"));
+imageLoader.load("/images/bookcase.png", (texture) =>
+  onLoad(texture, "bookcase")
+);
+imageLoader.load("/images/bookcase1.png", (texture) =>
+  onLoad(texture, "bookcase1")
+);
 imageLoader.load("/images/desk.png", (texture) => onLoad(texture, "desk"));
 imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
-imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
+imageLoader.load("/images/chiarGame.png", (texture) =>
+  onLoad(texture, "chiarGame")
+);
 imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
-imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
+imageLoader.load("/images/carpet1.png", (texture) =>
+  onLoad(texture, "carpet1")
+);
 // imageLoader.load("images/tree1.png", (texture) => onLoad(texture, "tree1"));
 // imageLoader.load("images/desktop.png", (texture) => onLoad(texture, "desktop"));
 // imageLoader.load("images/earth.png", (texture) => onLoad(texture, "earth"));
