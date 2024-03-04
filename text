@@ -1,88 +1,19 @@
-// function handleTouchMove(event) {
-//   const deltaX = event.touches[0].clientX - touchStartPosition.x;
-//   const deltaY = event.touches[0].clientY - touchStartPosition.y;
-
-//   if (selectedModel) {
-//     // Rotate the model based on the touch movement
-//     const rotationFactor = 0.005;
-//     selectedModel.rotation.y += deltaX * rotationFactor;
-//     selectedModel.rotation.x += deltaY * rotationFactor;
-
-//     if (event.touches.length === 2) {
-//       // Zoom the model based on the distance between two touches
-//       const deltaPinch = Math.hypot(
-//         event.touches[0].clientX - event.touches[1].clientX,
-//         event.touches[0].clientY - event.touches[1].clientY
-//       );
-
-//       const zoomFactor = 0.01;
-//       selectedModel.scale.multiplyScalar(
-//         1 + (deltaPinch - touchStartPosition.pinch) * zoomFactor
-//       );
-
-//       // Update pinch distance for the next frame
-//       touchStartPosition.pinch = deltaPinch;
-//     }
-
-//     overlayContent.innerText = `Model Coordinates: x=${selectedModel.position.x.toFixed(
-//       2
-//     )}, y=${selectedModel.position.y.toFixed(
-//       2
-//     )}, z=${selectedModel.position.z.toFixed(2)}`;
-//   }
-
-//   touchStartPosition = {
-//     x: event.touches[0].clientX,
-//     y: event.touches[0].clientY,
-//     pinch: touchStartPosition.pinch || 0, // Initialize pinch distance
-//   };
-// }
-
-// Event listener for touch controls
-// ------------------------------------------------
 import * as THREE from "three";
 import { ARButton } from "three/examples/jsm/webxr/ARButton";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 
-let loadedModels = {};
+let loadedImages = {};
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 let overlayContent = document.getElementById("overlay-content");
 let selectInput = document.getElementById("model-select");
-let modelName = selectInput.value;
-let selectedModel = null;
+let imageName = selectInput.value;
+let selectedImage = null;
 
 selectInput.addEventListener("change", (e) => {
-  modelName = e.target.value;
+  imageName = e.target.value;
 });
 
-let gltfLoader = new GLTFLoader();
-let dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("/draco/");
-gltfLoader.setDRACOLoader(dracoLoader);
-
-gltfLoader.load("/models/chair.gltf", onLoad);
-gltfLoader.load("/models/bookcase.gltf", onLoad);
-gltfLoader.load("/models/bookcase1.gltf", onLoad);
-gltfLoader.load("/models/bed.gltf", onLoad);
-gltfLoader.load("/models/desk.gltf", onLoad);
-gltfLoader.load("/models/carpet.gltf", onLoad);
-gltfLoader.load("/models/carpet1.gltf", onLoad);
-gltfLoader.load("/models/chiarGame.gltf", onLoad);
-gltfLoader.load("/models/tree1.gltf", onLoad);
-gltfLoader.load("/models/desktop.gltf", onLoad);
-gltfLoader.load("/models/earth.gltf", onLoad);
-gltfLoader.load("/models/bmw.gltf", onLoad);
-gltfLoader.load("/models/drone.gltf", onLoad);
-gltfLoader.load("/models/kawasaki2.gltf", onLoad);
-gltfLoader.load("/models/kawasakiNinja.gltf", onLoad);
-gltfLoader.load("/models/mersedes.gltf", onLoad);
-
-function onLoad(gltf) {
-  loadedModels[gltf.scene.name] = gltf.scene;
-  console.log(`Loaded model: ${gltf.scene.name}`);
-}
+const imageLoader = new THREE.TextureLoader();
 
 const scene = new THREE.Scene();
 
@@ -126,30 +57,22 @@ document.body.appendChild(
   ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 );
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshStandardMaterial({
-  color: 0xffffff * Math.random(),
-});
-
 let controller = renderer.xr.getController(0);
 controller.addEventListener("select", onSelect);
 scene.add(controller);
 
 function onSelect() {
   if (reticle.visible) {
-    if (loadedModels[modelName]) {
-      const existingModel = scene.getObjectByName(modelName);
-      if (!existingModel) {
-        const model = loadedModels[modelName].clone();
-        model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(0.5, 0.5, 0.5);
-        model.name = modelName;
-        scene.add(model);
-        selectedModel = model;
-
-        overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
+    if (loadedImages[imageName]) {
+      const existingImage = scene.getObjectByName(imageName);
+      if (!existingImage) {
+        const image = createImagePlane(loadedImages[imageName]);
+        image.name = imageName;
+        scene.add(image);
+        selectedImage = image;
+        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(
           2
-        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;
+        )}, y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;
       }
     }
   }
@@ -165,12 +88,10 @@ function handleTouchMove(event) {
     const deltaX = currentTouch.clientX - previousTouch.clientX;
     const deltaY = currentTouch.clientY - previousTouch.clientY;
 
-    // حساب زاوية الدوران بناءً على حركة الإصبع
     const rotationFactor = 0.01;
-    selectedModel.rotation.y += deltaX * rotationFactor;
-    selectedModel.rotation.x += deltaY * rotationFactor;
+    selectedImage.rotation.y += deltaX * rotationFactor;
+    selectedImage.rotation.x += deltaY * rotationFactor;
   }
-
 
   previousTouch = {
     clientX: currentTouch.clientX,
@@ -232,3 +153,64 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(window.devicePixelRatio);
 });
+
+function createImagePlane(texture) {
+  const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
+  const imagePlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    imageMaterial
+  );
+  imagePlane.position.setFromMatrixPosition(reticle.matrix);
+  imagePlane.scale.set(0.5, 0.5, 0.5);
+  return imagePlane;
+}
+
+// Load images
+imageLoader.load("models/images/chair.png", (texture) =>
+  onLoad(texture, "chair")
+);
+imageLoader.load("models/images/bookcase.png", (texture) =>
+  onLoad(texture, "bookcase")
+);
+imageLoader.load("models/images/bookcase1.png", (texture) =>
+  onLoad(texture, "bookcase1")
+);
+imageLoader.load("models/images/desk.png", (texture) =>
+  onLoad(texture, "desk")
+);
+imageLoader.load("models/images/bed.png", (texture) => onLoad(texture, "bed"));
+imageLoader.load("models/images/chiarGame.png", (texture) =>
+  onLoad(texture, "chiarGame")
+);
+imageLoader.load("models/images/carpet.jpeg", (texture) =>
+  onLoad(texture, "carpet")
+);
+imageLoader.load("models/images/carpet1.png", (texture) =>
+  onLoad(texture, "carpet1")
+);
+imageLoader.load("models/images/tree1.png", (texture) =>
+  onLoad(texture, "tree1")
+);
+imageLoader.load("models/images/desktop.png", (texture) =>
+  onLoad(texture, "desktop")
+);
+imageLoader.load("models/images/earth.png", (texture) =>
+  onLoad(texture, "earth")
+);
+imageLoader.load("models/images/bmw.png", (texture) => onLoad(texture, "bmw"));
+imageLoader.load("models/images/drone.png", (texture) =>
+  onLoad(texture, "drone")
+);
+imageLoader.load("models/images/kawasaki2.png", (texture) =>
+  onLoad(texture, "kawasaki2")
+);
+imageLoader.load("models/images/kawasakiNinja.png", (texture) =>
+  onLoad(texture, "kawasakiNinja")
+);
+imageLoader.load("models/images/mersedes.png", (texture) =>
+  onLoad(texture, "mersedes")
+);
+
+function onLoad(texture, name) {
+  loadedImages[name] = texture;
+}

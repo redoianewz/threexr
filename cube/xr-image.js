@@ -134,6 +134,11 @@ function render(timestamp, frame) {
         const hit = hitTestResults[0];
         reticle.visible = true;
         reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
+
+        // إذا تم اختيار صورة، قم بإخفاء الـ "reticle"
+        if (selectedImage) {
+          reticle.visible = false;
+        }
       } else {
         reticle.visible = false;
       }
@@ -142,6 +147,7 @@ function render(timestamp, frame) {
 
   renderer.render(scene, camera);
 }
+
 
 window.addEventListener("resize", () => {
   sizes.width = window.innerWidth;
@@ -166,38 +172,22 @@ function createImagePlane(texture) {
 }
 
 // Load images
-imageLoader.load("models/images/chair.png", (texture) => onLoad(texture, "chair"));
-imageLoader.load("models/images/bookcase.png", (texture) =>
-  onLoad(texture, "bookcase")
-);
-imageLoader.load("models/images/bookcase1.png", (texture) =>
-  onLoad(texture, "bookcase1")
-);
-imageLoader.load("models/images/desk.png", (texture) => onLoad(texture, "desk"));
-imageLoader.load("models/images/bed.png", (texture) => onLoad(texture, "bed"));
-imageLoader.load("models/images/chiarGame.png", (texture) =>
-  onLoad(texture, "chiarGame")
-);
-imageLoader.load("models/images/carpet.jpeg", (texture) => onLoad(texture, "carpet"));
-imageLoader.load("models/images/carpet1.png", (texture) =>
-  onLoad(texture, "carpet1")
-);
-imageLoader.load("models/images/tree1.png", (texture) => onLoad(texture, "tree1"));
-imageLoader.load("models/images/desktop.png", (texture) =>
-  onLoad(texture, "desktop")
-);
-imageLoader.load("models/images/earth.png", (texture) => onLoad(texture, "earth"));
-imageLoader.load("models/images/bmw.png", (texture) => onLoad(texture, "bmw"));
-imageLoader.load("models/images/drone.png", (texture) => onLoad(texture, "drone"));
-imageLoader.load("models/images/kawasaki2.png", (texture) =>
-  onLoad(texture, "kawasaki2")
-);
-imageLoader.load("models/images/kawasakiNinja.png", (texture) =>
-  onLoad(texture, "kawasakiNinja")
-);
-imageLoader.load("models/images/mersedes.png", (texture) =>
-  onLoad(texture, "mersedes")
-);
+imageLoader.load("/images/chair.png", (texture) => onLoad(texture, "chair"));
+imageLoader.load("/images/bookcase.png", (texture) => onLoad(texture, "bookcase"));
+imageLoader.load("/images/bookcase1.png", (texture) => onLoad(texture, "bookcase1"));
+imageLoader.load("/images/desk.png", (texture) => onLoad(texture, "desk"));
+imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
+imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
+imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
+imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
+// imageLoader.load("images/tree1.png", (texture) => onLoad(texture, "tree1"));
+// imageLoader.load("images/desktop.png", (texture) => onLoad(texture, "desktop"));
+// imageLoader.load("images/earth.png", (texture) => onLoad(texture, "earth"));
+// imageLoader.load("images/bmw.png", (texture) => onLoad(texture, "bmw"));
+// imageLoader.load("images/drone.png", (texture) => onLoad(texture, "drone"));
+// imageLoader.load("images/kawasaki2.png", (texture) => onLoad(texture, "kawasaki2"));
+// imageLoader.load("images/kawasakiNinja.png", (texture) => onLoad(texture, "kawasakiNinja"));
+// imageLoader.load("images/mersedes.png", (texture) => onLoad(texture, "mersedes"));
 
 function onLoad(texture, name) {
   loadedImages[name] = texture;
