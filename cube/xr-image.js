@@ -9,6 +9,7 @@ let selectInput = document.getElementById("model-select");
 let imageName = selectInput.value;
 let selectedImage = null;
 
+
 selectInput.addEventListener("change", (e) => {
   imageName = e.target.value;
 });
@@ -77,34 +78,68 @@ function onSelect() {
     }
   }
 }
-
-let touchStartPosition = { x: 0, y: 0, pinch: 0 };
+let pinchStartDistance = 0;
+let isPinching = false;
 let previousTouch = null;
 
 function handleTouchMove(event) {
-  const currentTouch = event.touches[0];
+  const touches = event.touches;
 
-  if (previousTouch) {
-    const deltaX = currentTouch.clientX - previousTouch.clientX;
-    const deltaY = currentTouch.clientY - previousTouch.clientY;
+  if (touches.length === 1) {
+    const currentTouch = touches[0];
 
-    const rotationFactor = 0.01;
-    selectedImage.rotation.y += deltaX * rotationFactor;
-    selectedImage.rotation.x += deltaY * rotationFactor;
+    if (previousTouch) {
+      const deltaX = currentTouch.clientX - previousTouch.clientX;
+      const deltaY = currentTouch.clientY - previousTouch.clientY;
+
+      const rotationFactor = 0.01;
+      selectedImage.rotation.y += deltaX * rotationFactor;
+      selectedImage.rotation.x += deltaY * rotationFactor;
+    }
+
+    previousTouch = {
+      clientX: currentTouch.clientX,
+      clientY: currentTouch.clientY,
+    };
+  } else if (touches.length === 2) {
+    const pinchDistance = getPinchDistance(touches[0], touches[1]);
+
+    if (!isPinching) {
+      pinchStartDistance = pinchDistance;
+      isPinching = true;
+    }
+
+    const zoomFactor = pinchDistance / pinchStartDistance;
+
+    if (selectedImage) {
+      // قم بتحديث الحجم (scale) وتكبير/تصغير الصورة
+      selectedImage.scale.multiplyScalar(zoomFactor);
+
+      overlayContent.innerText = `Image Coordinates: x=${selectedImage.position.x.toFixed(
+        2
+      )}, y=${selectedImage.position.y.toFixed(
+        2
+      )}, z=${selectedImage.position.z.toFixed(
+        2
+      )}\nScale: ${selectedImage.scale.x.toFixed(2)}`;
+    }
+
+    pinchStartDistance = pinchDistance;
+  } else {
+    previousTouch = null;
+    isPinching = false;
   }
-
-  previousTouch = {
-    clientX: currentTouch.clientX,
-    clientY: currentTouch.clientY,
-  };
 }
 
 function handleTouchEnd() {
+  pinchStartDistance = 0;
+  isPinching = false;
   previousTouch = null;
 }
 
 window.addEventListener("touchmove", handleTouchMove);
 window.addEventListener("touchend", handleTouchEnd);
+
 
 renderer.setAnimationLoop(render);
 
@@ -180,14 +215,6 @@ imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
 imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
 imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
 imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
-// imageLoader.load("images/tree1.png", (texture) => onLoad(texture, "tree1"));
-// imageLoader.load("images/desktop.png", (texture) => onLoad(texture, "desktop"));
-// imageLoader.load("images/earth.png", (texture) => onLoad(texture, "earth"));
-// imageLoader.load("images/bmw.png", (texture) => onLoad(texture, "bmw"));
-// imageLoader.load("images/drone.png", (texture) => onLoad(texture, "drone"));
-// imageLoader.load("images/kawasaki2.png", (texture) => onLoad(texture, "kawasaki2"));
-// imageLoader.load("images/kawasakiNinja.png", (texture) => onLoad(texture, "kawasakiNinja"));
-// imageLoader.load("images/mersedes.png", (texture) => onLoad(texture, "mersedes"));
 
 function onLoad(texture, name) {
   loadedImages[name] = texture;
