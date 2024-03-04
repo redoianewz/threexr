@@ -92,6 +92,7 @@ function handleTouchMove(event) {
       const deltaX = currentTouch.clientX - previousTouch.clientX;
       const deltaY = currentTouch.clientY - previousTouch.clientY;
 
+      // التحكم في الدوران إذا كان هناك لمست واحدة
       const rotationFactor = 0.01;
       selectedImage.rotation.y += deltaX * rotationFactor;
       selectedImage.rotation.x += deltaY * rotationFactor;
@@ -116,7 +117,6 @@ function handleTouchMove(event) {
     const zoomFactor = pinchDistance / pinchStartDistance;
 
     if (selectedImage) {
-      // قم بتحديث الحجم (scale) وتكبير/تصغير الصورة
       selectedImage.scale.multiplyScalar(zoomFactor);
 
       overlayContent.innerText = `Image Coordinates: x=${selectedImage.position.x.toFixed(
@@ -131,7 +131,7 @@ function handleTouchMove(event) {
     pinchStartDistance = pinchDistance;
   } else {
     // إذا لم تكن هناك لمستين، قم بإعادة القيم إلى القيم الافتراضية
-    previousTouch =null;
+    previousTouch = null;
     isPinching = false;
     pinchStartDistance = 0;
   }
@@ -141,7 +141,6 @@ function handleTouchEnd() {
   pinchStartDistance = 0;
   isPinching = false;
   previousTouch = null;
-
 }
 
 window.addEventListener("touchmove", handleTouchMove);
