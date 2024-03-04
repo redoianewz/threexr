@@ -169,6 +169,7 @@ function createImagePlane(texture) {
 }
 
 // Load images
+
 imageLoader.load("/models/images/carpet.jpeg", (texture) =>
     onLoad(texture, "carpet")
     );

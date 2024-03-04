@@ -83,6 +83,10 @@ document.body.appendChild(
   ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
 );
 
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshStandardMaterial({
+  color: 0xffffff * Math.random(),
+});
 
 let controller = renderer.xr.getController(0);
 controller.addEventListener("select", onSelect);
@@ -98,12 +102,12 @@ function onSelect() {
         model.scale.set(0.5, 0.5, 0.5);
         model.name = modelName;
         scene.add(model);
-        selectedModel = model;                
+        selectedModel = model;
+
         overlayContent.innerText = `Model Coordinates: x=${model.position.x.toFixed(
           2
-        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;          
-      }        
-
+        )}, y=${model.position.y.toFixed(2)}, z=${model.position.z.toFixed(2)}`;
+      }
     }
   }
 }
