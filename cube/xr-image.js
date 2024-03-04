@@ -94,17 +94,8 @@ function handleTouchMove(event) {
       const deltaY = currentTouch.clientY - previousTouch.clientY;
 
       const rotationFactor = 0.01;
-      // تحديث موقع الصورة بناءً على حركة المس
-      selectedImage.position.x += deltaX * rotationFactor;
-      selectedImage.position.y += deltaY * rotationFactor;
-
-      overlayContent.innerText = `Image Coordinates: x=${selectedImage.position.x.toFixed(
-        2
-      )}, y=${selectedImage.position.y.toFixed(
-        2
-      )}, z=${selectedImage.position.z.toFixed(
-        2
-      )}\nScale: ${selectedImage.scale.x.toFixed(2)}`;
+      selectedImage.rotation.y += deltaX * rotationFactor;
+      selectedImage.rotation.x += deltaY * rotationFactor;
     }
 
     previousTouch = {
@@ -144,9 +135,9 @@ function handleTouchMove(event) {
     previousTouch = [];
     isPinching = false;
     pinchStartDistance = 0;
+    
   }
 }
-
 
 
 function handleTouchEnd() {
