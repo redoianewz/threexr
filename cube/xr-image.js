@@ -168,19 +168,12 @@ function createImagePlane(texture) {
   return imagePlane;
 }
 
-// Function to start AR session
-function startAR() {
-  const session = renderer.xr.getSession();
-  if (session) {
-    session.requestReferenceSpace("viewer").then((referenceSpace) => {
-      session
-        .requestHitTestSource({ space: referenceSpace })
-        .then((source) => (hitTestSource = source));
-    });
+// Load images
+imageLoader.load("/models/images/carpet.jpeg", (texture) =>
+    onLoad(texture, "carpet")
+    );
+// Add more images as needed
 
-    session.addEventListener("end", () => {
-      hitTestSourceRequested = false;
-      hitTestSource = null;
-    });
-  }
+function onLoad(texture, name) {
+  loadedImages[name] = texture;
 }
