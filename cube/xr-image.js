@@ -9,12 +9,48 @@ let selectInput = document.getElementById("model-select");
 let imageName = selectInput.value;
 let selectedImage = null;
 
+window.addEventListener("resize", () => {
+  sizes.width = window.innerWidth;
+  sizes.height = window.innerHeight;
+
+  camera.aspect = sizes.width / sizes.height;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(window.devicePixelRatio);
+});
+
+function createImagePlane(texture) {
+  const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
+  const imagePlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    imageMaterial
+  );
+  imagePlane.rotation.x = -Math.PI / 2;
+  imagePlane.position.setFromMatrixPosition(reticle.matrix);
+  imagePlane.scale.set(0.5, 0.5, 0.5);
+  return imagePlane;
+}
 
 selectInput.addEventListener("change", (e) => {
   imageName = e.target.value;
 });
 
 const imageLoader = new THREE.TextureLoader();
+
+// Load images
+imageLoader.load("/images/chair.png", (texture) => onLoad(texture, "chair"));
+imageLoader.load("/images/bookcase.png", (texture) => onLoad(texture, "bookcase"));
+imageLoader.load("/images/bookcase1.png", (texture) => onLoad(texture, "bookcase1"));
+imageLoader.load("/images/desk.png", (texture) => onLoad(texture, "desk"));
+imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
+imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
+imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
+imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
+
+function onLoad(texture, name) {
+  loadedImages[name] = texture;
+}
 
 const scene = new THREE.Scene();
 
@@ -71,13 +107,13 @@ function onSelect() {
         image.name = imageName;
         scene.add(image);
         selectedImage = image;
-        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(
-          2
-        )}, y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;
+        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(2)},
+         y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;
       }
     }
   }
 }
+
 let pinchStartDistance = 0;
 let isPinching = false;
 let previousTouch = null;
@@ -176,7 +212,6 @@ function render(timestamp, frame) {
         reticle.visible = true;
         reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
 
-        // إذا تم اختيار صورة، قم بإخفاء الـ "reticle"
         if (selectedImage) {
           reticle.visible = false;
         }
@@ -190,38 +225,5 @@ function render(timestamp, frame) {
 }
 
 
-window.addEventListener("resize", () => {
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
 
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
 
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(window.devicePixelRatio);
-});
-
-function createImagePlane(texture) {
-  const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
-  const imagePlane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1, 1),
-    imageMaterial
-  );
-  imagePlane.position.setFromMatrixPosition(reticle.matrix);
-  imagePlane.scale.set(0.5, 0.5, 0.5);
-  return imagePlane;
-}
-
-// Load images
-imageLoader.load("/images/chair.png", (texture) => onLoad(texture, "chair"));
-imageLoader.load("/images/bookcase.png", (texture) => onLoad(texture, "bookcase"));
-imageLoader.load("/images/bookcase1.png", (texture) => onLoad(texture, "bookcase1"));
-imageLoader.load("/images/desk.png", (texture) => onLoad(texture, "desk"));
-imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
-imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
-imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
-imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
-
-function onLoad(texture, name) {
-  loadedImages[name] = texture;
-}
