@@ -19,7 +19,17 @@ window.addEventListener("resize", () => {
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(window.devicePixelRatio);
 });
+         const stopArButton = document.createElement("button");
+         stopArButton.textContent = "STOP AR";
+         stopArButton.style.display = "none";
+         document.body.appendChild(stopArButton);
 
+         // Handle click event for the Stop AR Button
+         stopArButton.addEventListener("click", () => {
+           if (currentSession !== null) {
+             currentSession.end();
+           }
+         });
 function createImagePlane(texture) {
   const imageMaterial = new THREE.MeshBasicMaterial({ map: texture });
   const imagePlane = new THREE.Mesh(
@@ -40,13 +50,21 @@ const imageLoader = new THREE.TextureLoader();
 
 // Load images
 imageLoader.load("/images/chair.png", (texture) => onLoad(texture, "chair"));
-imageLoader.load("/images/bookcase.png", (texture) => onLoad(texture, "bookcase"));
-imageLoader.load("/images/bookcase1.png", (texture) => onLoad(texture, "bookcase1"));
+imageLoader.load("/images/bookcase.png", (texture) =>
+  onLoad(texture, "bookcase")
+);
+imageLoader.load("/images/bookcase1.png", (texture) =>
+  onLoad(texture, "bookcase1")
+);
 imageLoader.load("/images/desk.png", (texture) => onLoad(texture, "desk"));
 imageLoader.load("/images/bed.png", (texture) => onLoad(texture, "bed"));
-imageLoader.load("/images/chiarGame.png", (texture) => onLoad(texture, "chiarGame"));
+imageLoader.load("/images/chiarGame.png", (texture) =>
+  onLoad(texture, "chiarGame")
+);
 imageLoader.load("/images/carpet.png", (texture) => onLoad(texture, "carpet"));
-imageLoader.load("/images/carpet1.png", (texture) =>onLoad(texture, "carpet1"));
+imageLoader.load("/images/carpet1.png", (texture) =>
+  onLoad(texture, "carpet1")
+);
 
 function onLoad(texture, name) {
   loadedImages[name] = texture;
@@ -107,9 +125,13 @@ function onSelect() {
         image.name = imageName;
         scene.add(image);
         selectedImage = image;
-        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(2)},
-         y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;
+        overlayContent.innerText = `Image Coordinates: x=${image.position.x.toFixed(
+          2
+        )},
+         y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;    
+          stopArButton.style.display = "block";    
       }
+
     }
   }
 }
@@ -182,7 +204,6 @@ function handleTouchEnd() {
 window.addEventListener("touchmove", handleTouchMove);
 window.addEventListener("touchend", handleTouchEnd);
 
-
 renderer.setAnimationLoop(render);
 
 function render(timestamp, frame) {
@@ -223,7 +244,3 @@ function render(timestamp, frame) {
 
   renderer.render(scene, camera);
 }
-
-
-
-
