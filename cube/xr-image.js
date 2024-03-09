@@ -112,7 +112,7 @@ document.body.appendChild(
   ARButton.createButton(renderer, {
     requiredFeatures: ["hit-test"],
     optionalFeatures: ["dom-overlay", "dom-overlay-for-handheld-ar"],
-    domOverlay: { root: document.body },
+    domOverlay: { root: document.getElementById("stor") },
   })
 );
 
