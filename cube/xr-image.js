@@ -131,8 +131,11 @@ function onSelect() {
          y=${image.position.y.toFixed(2)}, z=${image.position.z.toFixed(2)}`;    
           stopArButton.style.display = "block";    
       }
+                stopArButton.style.display = "block";    
 
     }
+              stopArButton.style.display = "block";    
+
   }
 }
 
