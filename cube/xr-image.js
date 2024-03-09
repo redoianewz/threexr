@@ -109,7 +109,11 @@ renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(
-  ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] })
+  ARButton.createButton(renderer, {
+    requiredFeatures: ["hit-test"],
+    optionalFeatures: ["dom-overlay", "dom-overlay-for-handheld-ar"],
+    domOverlay: { root: document.body },
+  })
 );
 
 let controller = renderer.xr.getController(0);
